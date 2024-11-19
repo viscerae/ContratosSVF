@@ -8,7 +8,7 @@ from num2words import num2words
 import locale
 
 
-sg.theme("reddit")
+sg.theme("dark")
 locale.setlocale(locale.LC_TIME, "pt_PT")
 
 layout = [
@@ -33,25 +33,30 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
         for _, row in excel.iterrows():
             word_doc = Document(word_path)
                 
-            nome = row.iloc[7]
-            estado_civil = row.iloc[8]
-            morada = f"{row.iloc[9]}, {row.iloc[10]}" 
-            naturalidade = row.iloc[15]
-            tipo_id = str(row.iloc[11])
-            nr_id = str(row.iloc[12])
-            categoria = str(row.iloc[16])
-            func = str(row.iloc[19])
-            horas = str(row.iloc[17])
-            renum = str(row.iloc[18])
+            nome = row.iloc[1]
+            estado_civil = row.iloc[2]
+            morada = f"{row.iloc[3]}, {row.iloc[4]}" 
+            naturalidade = row.iloc[5]
+            tipo_id = str(row.iloc[6])
+            nr_id = str(row.iloc[7])
+            validade_raw = str(row.iloc[8])
+            nif = row.iloc[9]
+            niss = row.iloc[10]
+            categoria = str(row.iloc[11])
+            func = str(row.iloc[12])
+            horas_semanal = str(row.iloc[13])
+            horas_diario = str(row.iloc[14])
+            renum = row.iloc[15]
+            inic_contrato = str(row.iloc[16])
             ext = num2words(renum, lang='pt')
-            
-            print(nome, estado_civil, morada, tipo_id, nr_id, categoria, func, horas, renum, ext)
+            datacontrato = (pd.to_datetime(inic_contrato.strip(), errors = 'coerse')).strftime('%d/%m/%Y')
+            print(nome, estado_civil, morada, tipo_id, nr_id, validade_raw, categoria, nif, niss, func, horas_semanal, horas_diario, renum, ext, inic_contrato, datacontrato)
             
             replacement_text2 = (
                 f"categoria de {categoria}, para que desempenhe, sob as ordens e direcção daquela, as funções inerentes àquela categoria e, designadamente: {func}."
             )
             replacement_text3 = (
-                f"O horário de trabalho em vigor na Empresa é de {horas} horas semanais, com 8 horas "
+                f"O horário de trabalho em vigor na Empresa é de {horas_semanal} horas semanais, com {horas_diario} horas "
             )
             replacement_text4 = (
                 f"Como contrapartida pela prestação de trabalho prevista neste contrato a Empresa pagará ao Trabalhador, mediante transferência bancária ou, excecionalmente e por motivos de necessidade operacional, através de cheque bancário uma remuneração mensal ilíquida de {renum} € ({ext})."
@@ -85,7 +90,7 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
                     run.font.size = Pt(11)
             
             
-            validade_raw = str(row.iloc[13])
+            
 
             if " / " in validade_raw:
                 # Split and remove any trailing empty parts
@@ -100,7 +105,7 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
                 pre_validade = pd.to_datetime(validade_raw.strip(), errors='coerce')
             
             validade = pre_validade.strftime('%d/%m/%Y')
-            nif = row.iloc[14]
+            print(pre_validade)
 
             # Prepare the text to insert
             replacement_text = (
