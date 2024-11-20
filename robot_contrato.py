@@ -28,11 +28,10 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
     
     try:
         excel = pd.read_excel(excel_path)
-
-        # Iterate over each row in the Excel file
+        
         for _, row in excel.iterrows():
-            word_doc = Document(word_path)
-                
+    ######################################## DATA EXTRACTION ############################################
+            word_doc = Document(word_path)          
             nome = row.iloc[1]
             estado_civil = row.iloc[2]
             morada = f"{row.iloc[3]}, {row.iloc[4]}" 
@@ -50,8 +49,14 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
             inic_contrato = str(row.iloc[16])
             ext = num2words(renum, lang='pt')
             datacontrato = (pd.to_datetime(inic_contrato.strip(), errors = 'coerse')).strftime('%d/%m/%Y')
+    #####################################################################################################   
+        
             print(nome, estado_civil, morada, tipo_id, nr_id, validade_raw, categoria, nif, niss, func, horas_semanal, horas_diario, renum, ext, inic_contrato, datacontrato)
-            
+    
+    ########################################## TEXT REPLACEMENT ##########################################        
+            replacement_text = (
+                f"{nome}, {estado_civil}, natural de {naturalidade}, residente na {morada}., portador(a) do {tipo_id} n.º {nr_id}, válido até {validade}, contribuinte fiscal n.º {nif}, de ora em diante designada apenas por ""Trabalhador"";"
+            )
             replacement_text2 = (
                 f"categoria de {categoria}, para que desempenhe, sob as ordens e direcção daquela, as funções inerentes àquela categoria e, designadamente: {func}."
             )
@@ -64,6 +69,16 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
             replacement_text5 = (
                 f"Feito em duas vias, em Lisboa, no dia {today}"
             )
+            replacement_text6 = (
+                f"O presente contrato é celebrado sem termo, produzindo efeitos a partir do dia {inic_contrato}"
+            )
+            
+            for paragraph in word_doc.paragraphs:
+                if 'de ora em diante designada apenas por “Trabalhador";'in paragraph.text:
+                    paragraph.clear()
+                    run = paragraph.add_run(replacement_text)
+                    run.font.name = 'Calibri'
+                    run.font.size = Pt(11)
             for paragraph in word_doc.paragraphs:
                 if "sob as ordens e direcção daquela, as funções inerentes àquela categoria" in paragraph.text:
                     paragraph.clear()
@@ -88,12 +103,16 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
                     run = paragraph.add_run(replacement_text5)
                     run.font.name = 'Calibri'
                     run.font.size = Pt(11)
+            for paragraph in word_doc.paragraphs:
+                if "[INITCONT]" in paragraph.text:
+                    paragraph.clear()
+                    run = paragraph.add_run(replacement_text6)
+                    run.font.name = 'Calibri'
+                    run.font.size = Pt(11)
+    #####################################################################################################                
             
-            
-            
-
+    ######################################### CLEANUP DATES #############################################          
             if " / " in validade_raw:
-                # Split and remove any trailing empty parts
                 validade_list = [date.strip() for date in validade_raw.split(" / ") if date.strip()]
                 validade_dates = [
                     pd.to_datetime(date, errors='coerce') for date in validade_list
@@ -101,37 +120,14 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
                 validade_dates = [date for date in validade_dates if not pd.isna(date)]
                 pre_validade = max(validade_dates) if validade_dates else None
             else:
-                # Single date processing
                 pre_validade = pd.to_datetime(validade_raw.strip(), errors='coerce')
             
             validade = pre_validade.strftime('%d/%m/%Y')
             print(pre_validade)
-
-            # Prepare the text to insert
-            replacement_text = (
-                f"{nome}, {estado_civil}, natural de {naturalidade}, residente na {morada}., portador(a) do {tipo_id} n.º {nr_id}, válido até {validade}, contribuinte fiscal n.º {nif}, de ora em diante designada apenas por ""Trabalhador"";"
-            )
-
-            # Replace the placeholder text in the document
-            for paragraph in word_doc.paragraphs:
-                if 'de ora em diante designada apenas por “Trabalhador";'in paragraph.text:
-                    paragraph.clear()
-                    run = paragraph.add_run(replacement_text)
-                    run.font.name = 'Calibri'
-                    run.font.size = Pt(11)
-
-                # Replace the date in the format "Lisboa, no dia ... de … de 202…." or "Lisboa, ... de … de 202…."
-                #if "Lisboa, no dia" in paragraph.text or "[Lisboa]" in paragraph.text:
-                 #   # Replace with today's date
-                  #  paragraph.text = paragraph.text.replace("Lisboa, no dia ... de … de 202…", f"Lisboa, no dia {today}")
-                   # paragraph.text = paragraph.text.replace("Lisboa, ... de … de 202…", f"Lisboa, {today}")
-                      # Set the font to Calibri for the new date text
-                    #for run in paragraph.runs:
-                     #   run.font.name = 'Calibri'
-                      #  run.font.size = Pt(11)  
-
-            # Save the modified Word document in the new folder with a unique name for each row
-            output_path = os.path.join(folder_name, f"{nome}.docx")  # Save each file in the new folder
+    #####################################################################################################           
+ 
+ 
+            output_path = os.path.join(folder_name, f"{nome}.docx")
             word_doc.save(output_path)
             print(f"Documento gerado: {output_path}")
             
@@ -143,12 +139,12 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
         return
 
 
-# Loop da interface para pegar os arquivos
+    ######################################### WINDOW LOOP ###############################################
 while True:
-    event, values = window.read() # Listen for events
-    if event == sg.WIN_CLOSED:     # Check if the window was closed
-        break                       # Exit the loop
-    elif event == "Gerar Contratos Completos":          # Check for other events
+    event, values = window.read()
+    if event == sg.WIN_CLOSED:     
+        break                    
+    elif event == "Gerar Contratos Completos":      
         today = datetime.today().strftime("%d de %B de %Y")
         desktop_path = os.path.expanduser("~/Desktop")
         folder_name = os.path.join(desktop_path, f"Contratos - {today}")
@@ -159,8 +155,7 @@ while True:
         excel_path = values["input_excel"]
         word_path = values["input_word"]
         
-        # Chama a função para preencher o contrato
         preencher_contrato(excel_path, word_path, folder_name, today)
 
 window.close()
-
+    #####################################################################################################
