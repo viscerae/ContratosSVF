@@ -61,7 +61,7 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
                 f"categoria de {categoria}, para que desempenhe, sob as ordens e direcção daquela, as funções inerentes àquela categoria e, designadamente: {func}."
             )
             replacement_text3 = (
-                f"O horário de trabalho em vigor na Empresa é de {horas_semanal} horas semanais, com {horas_diario} horas "
+                f"O horário de trabalho em vigor na Empresa é de {horas_semanal} horas semanais, com {horas_diario} horas diárias a prestar de segunda a sexta-feira entre as 09:00 horas e as 18:00  horas, com intervalo de uma hora para almoço."
             )
             replacement_text4 = (
                 f"Como contrapartida pela prestação de trabalho prevista neste contrato a Empresa pagará ao Trabalhador, mediante transferência bancária ou, excecionalmente e por motivos de necessidade operacional, através de cheque bancário uma remuneração mensal ilíquida de {renum} € ({ext})."
