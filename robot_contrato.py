@@ -67,7 +67,7 @@ def preencher_contrato(excel_path, word_path, folder_name, today):
                 f"Como contrapartida pela prestação de trabalho prevista neste contrato a Empresa pagará ao Trabalhador, mediante transferência bancária ou, excecionalmente e por motivos de necessidade operacional, através de cheque bancário uma remuneração mensal ilíquida de {renum} € ({ext})."
             )
             replacement_text5 = (
-                f"Feito em duas vias, em Lisboa, no dia {today}"
+                f"Feito em duas vias, em Lisboa, no dia {datacontrato}"
             )
             replacement_text6 = (
                 f"O presente contrato é celebrado sem termo, produzindo efeitos a partir do dia {datacontrato}"
